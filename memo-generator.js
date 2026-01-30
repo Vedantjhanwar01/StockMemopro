@@ -1,6 +1,21 @@
-// UPDATED Memo Generator - Real Financial Data + AI Analysis
+// UPDATED Memo Generator - Real Financial Data + AI Analysis + Info Buttons
 
 class MemoGenerator {
+    // Tooltip definitions for each section
+    static TOOLTIPS = {
+        priceData: "Historical price performance showing start price, end price, percentage change, maximum drawdown, and volatility for different time periods.",
+        financialSnapshot: "Key financial metrics from income statements including Revenue, EBITDA, Net Profit, EPS (Earnings Per Share), and margin percentages over the past 5 years.",
+        segmentBreakdown: "Revenue breakdown by business segment or product line, showing how the company generates income across different areas.",
+        financialRatios: "Key profitability and efficiency ratios including ROE (Return on Equity), ROA (Return on Assets), ROCE (Return on Capital Employed), and Debt-to-Equity ratio.",
+        businessSnapshot: "Quick overview of the company's business model, products/services, geographic presence, and market position.",
+        whyThisCouldWork: "Management-stated claims and strategies that could drive future growth. Evidence strength indicates reliability of each claim.",
+        keyRisks: "Company-disclosed risk factors that could negatively impact business performance or stock price.",
+        valuationMetrics: "Valuation ratios comparing the stock price to fundamental metrics like earnings (P/E), book value (P/B), sales (P/S), and enterprise value to EBITDA.",
+        judgmentSupport: "Non-advisory assessment of business quality, evidence strength, and uncertainty level to support investment analysis.",
+        validationNeeds: "Key assumptions and claims that require further verification before making investment decisions.",
+        narrativeContext: "Recent news, events, and developments that may affect the company's outlook."
+    };
+
     generateMemo(company, researchData) {
         const sections = [];
 
@@ -46,6 +61,17 @@ class MemoGenerator {
         return sections.join('\\n\\n');
     }
 
+    generateSectionHeading(title, tooltipKey) {
+        const tooltip = MemoGenerator.TOOLTIPS[tooltipKey] || '';
+        return `<div class="section-heading-wrapper">
+            <h2 class="memo-section-heading">${title}</h2>
+            <button class="info-btn" type="button" aria-label="Info about ${title}">
+                ℹ
+                <span class="info-tooltip">${tooltip}</span>
+            </button>
+        </div>`;
+    }
+
     generateTitle(company) {
         return `<div class="memo-title">
             ${company.name} | ${company.exchange} | ${company.sector}
@@ -56,13 +82,13 @@ class MemoGenerator {
     generatePriceData(priceData) {
         if (!priceData) {
             return `<div class="memo-section">
-                <h2 class="memo-section-heading">SECTION 1: PRICE & MARKET DATA</h2>
-                <p>Not disclosed</p>
+                ${this.generateSectionHeading('SECTION 1: PRICE & MARKET DATA', 'priceData')}
+                <p>Price data not available</p>
             </div>`;
         }
 
         let content = `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 1: PRICE & MARKET DATA</h2>
+            ${this.generateSectionHeading('SECTION 1: PRICE & MARKET DATA', 'priceData')}
             <table class="data-table">
                 <thead>
                     <tr>
@@ -116,13 +142,13 @@ class MemoGenerator {
     generateFinancialSnapshot(snapshot) {
         if (!snapshot || !snapshot.data || snapshot.data.length === 0) {
             return `<div class="memo-section">
-                <h2 class="memo-section-heading">SECTION 2: FINANCIAL SNAPSHOT</h2>
-                <p>Not disclosed</p>
+                ${this.generateSectionHeading('SECTION 2: FINANCIAL SNAPSHOT', 'financialSnapshot')}
+                <p>Financial data not available</p>
             </div>`;
         }
 
         let content = `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 2: FINANCIAL SNAPSHOT (5 YEARS)</h2>
+            ${this.generateSectionHeading('SECTION 2: FINANCIAL SNAPSHOT (5 YEARS)', 'financialSnapshot')}
             <table class="data-table">
                 <thead>
                     <tr>
@@ -130,6 +156,7 @@ class MemoGenerator {
                         <th>Revenue</th>
                         <th>EBITDA</th>
                         <th>Net Profit</th>
+                        <th>EPS</th>
                         <th>Op Margin %</th>
                         <th>Net Margin %</th>
                     </tr>
@@ -138,11 +165,13 @@ class MemoGenerator {
 
         snapshot.data.forEach((year, i) => {
             const yearLabel = snapshot.years[i] ? new Date(snapshot.years[i]).getFullYear() : `Year ${i + 1}`;
+            const eps = year.eps !== undefined && year.eps !== null ? this.formatNumber(year.eps) : 'N/A';
             content += `<tr>
                 <td>${yearLabel}</td>
                 <td>${this.formatLargeNumber(year.revenue)}</td>
                 <td>${this.formatLargeNumber(year.ebitda)}</td>
                 <td>${this.formatLargeNumber(year.netIncome)}</td>
+                <td>${eps}</td>
                 <td>${year.operatingMargin}%</td>
                 <td>${year.netMargin}%</td>
             </tr>`;
@@ -155,13 +184,13 @@ class MemoGenerator {
     generateSegmentBreakdown(segmentData) {
         if (!segmentData || !segmentData.available) {
             return `<div class="memo-section">
-                <h2 class="memo-section-heading">SECTION 3: SEGMENT & REVENUE BREAKDOWN</h2>
-                <p>${segmentData?.message || 'Not disclosed'}</p>
+                ${this.generateSectionHeading('SECTION 3: SEGMENT & REVENUE BREAKDOWN', 'segmentBreakdown')}
+                <p>${segmentData?.message || 'Segment data not available'}</p>
             </div>`;
         }
 
         return `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 3: SEGMENT & REVENUE BREAKDOWN</h2>
+            ${this.generateSectionHeading('SECTION 3: SEGMENT & REVENUE BREAKDOWN', 'segmentBreakdown')}
             <p>Segment data will be displayed here once available</p>
         </div>`;
     }
@@ -169,21 +198,22 @@ class MemoGenerator {
     generateFinancialRatiosTable(ratios) {
         if (!ratios || !ratios.data || ratios.data.length === 0) {
             return `<div class="memo-section">
-                <h2 class="memo-section-heading">SECTION 4: KEY FINANCIAL RATIOS</h2>
-                <p>Not disclosed</p>
+                ${this.generateSectionHeading('SECTION 4: KEY FINANCIAL RATIOS', 'financialRatios')}
+                <p>Financial ratios not available</p>
             </div>`;
         }
 
         let content = `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 4: KEY FINANCIAL RATIOS</h2>
+            ${this.generateSectionHeading('SECTION 4: KEY FINANCIAL RATIOS', 'financialRatios')}
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>Year</th>
                         <th>ROE %</th>
+                        <th>ROA %</th>
                         <th>ROCE %</th>
                         <th>Debt/Equity</th>
-                        <th>Int. Coverage</th>
+                        <th>Current Ratio</th>
                         <th>Free Cash Flow</th>
                     </tr>
                 </thead>
@@ -193,10 +223,11 @@ class MemoGenerator {
             const yearLabel = ratios.years[i] ? new Date(ratios.years[i]).getFullYear() : `Year ${i + 1}`;
             content += `<tr>
                 <td>${yearLabel}</td>
-                <td>${year.roe}%</td>
-                <td>${year.roce}</td>
-                <td>${year.debtToEquity}</td>
-                <td>${year.interestCoverage}</td>
+                <td>${this.formatRatio(year.roe)}</td>
+                <td>${this.formatRatio(year.roa)}</td>
+                <td>${this.formatRatio(year.roce)}</td>
+                <td>${this.formatRatio(year.debtToEquity)}</td>
+                <td>${this.formatRatio(year.currentRatio)}</td>
                 <td>${this.formatLargeNumber(year.freeCashFlow)}</td>
             </tr>`;
         });
@@ -207,7 +238,7 @@ class MemoGenerator {
 
     generateBusinessSnapshot(snapshot) {
         let content = `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 5: BUSINESS SNAPSHOT</h2>
+            ${this.generateSectionHeading('SECTION 5: BUSINESS SNAPSHOT', 'businessSnapshot')}
             <ul>`;
 
         if (snapshot && snapshot.length > 0) {
@@ -226,7 +257,7 @@ class MemoGenerator {
 
     generateWhyThisCOULDWork(thesisPoints) {
         let content = `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 6: WHY THIS COULD WORK (MANAGEMENT-SUPPORTED)</h2>
+            ${this.generateSectionHeading('SECTION 6: WHY THIS COULD WORK (MANAGEMENT-SUPPORTED)', 'whyThisCouldWork')}
             <ul>`;
 
         if (thesisPoints && thesisPoints.length > 0) {
@@ -250,7 +281,7 @@ class MemoGenerator {
 
     generateKeyRisks(risks) {
         let content = `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 7: KEY RISKS (COMPANY-DISCLOSED)</h2>
+            ${this.generateSectionHeading('SECTION 7: KEY RISKS (COMPANY-DISCLOSED)', 'keyRisks')}
             <ul>`;
 
         if (risks && risks.length > 0) {
@@ -273,9 +304,9 @@ class MemoGenerator {
 
     generateValuationContext(metrics, sanity) {
         let content = `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 8: VALUATION CONTEXT</h2>`;
+            ${this.generateSectionHeading('SECTION 8: VALUATION CONTEXT', 'valuationMetrics')}`;
 
-        if (metrics) {
+        if (metrics && (metrics.currentPE || metrics.priceToBook || metrics.priceToSales || metrics.evToEbitda)) {
             content += `<table class="data-table">
                 <thead>
                     <tr>
@@ -286,18 +317,28 @@ class MemoGenerator {
                 <tbody>
                     <tr>
                         <td>Current P/E</td>
-                        <td>${metrics.currentPE}</td>
+                        <td>${this.formatRatio(metrics.currentPE)}</td>
                     </tr>
                     <tr>
-                        <td>Historical Avg P/E</td>
-                        <td>${metrics.historicalAvgPE}</td>
+                        <td>Forward P/E</td>
+                        <td>${this.formatRatio(metrics.forwardPE)}</td>
                     </tr>
                     <tr>
-                        <td>Sector Avg P/E</td>
-                        <td>${metrics.sectorAvgPE}</td>
+                        <td>Price to Book (P/B)</td>
+                        <td>${this.formatRatio(metrics.priceToBook)}</td>
+                    </tr>
+                    <tr>
+                        <td>Price to Sales (P/S)</td>
+                        <td>${this.formatRatio(metrics.priceToSales)}</td>
+                    </tr>
+                    <tr>
+                        <td>EV/EBITDA</td>
+                        <td>${this.formatRatio(metrics.evToEbitda)}</td>
                     </tr>
                 </tbody>
             </table>`;
+        } else {
+            content += `<p>Valuation metrics not available</p>`;
         }
 
         if (sanity) {
@@ -315,7 +356,7 @@ class MemoGenerator {
         const ul = judgment?.uncertaintyLevel || { level: 'Medium', reasoning: 'Not disclosed' };
 
         return `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 9: JUDGMENT SUPPORT (NON-ADVISORY)</h2>
+            ${this.generateSectionHeading('SECTION 9: JUDGMENT SUPPORT (NON-ADVISORY)', 'judgmentSupport')}
             <div class="judgment-grid">
                 <div class="judgment-item">
                     <div class="judgment-label">Business Quality</div>
@@ -338,7 +379,7 @@ class MemoGenerator {
 
     generateValidationNeeds(validationNeeds) {
         let content = `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 10: WHAT NEEDS VALIDATION NEXT</h2>
+            ${this.generateSectionHeading('SECTION 10: WHAT NEEDS VALIDATION NEXT', 'validationNeeds')}
             <ul>`;
 
         if (validationNeeds && validationNeeds.length > 0) {
@@ -361,7 +402,7 @@ class MemoGenerator {
 
     generateNarrativeContext(narrative) {
         let content = `<div class="memo-section">
-            <h2 class="memo-section-heading">SECTION 11: NEWS & RECENT EVENTS</h2>`;
+            ${this.generateSectionHeading('SECTION 11: NEWS & RECENT EVENTS', 'narrativeContext')}`;
 
         if (narrative && narrative.length > 0) {
             content += '<ul>';
@@ -370,7 +411,7 @@ class MemoGenerator {
             });
             content += '</ul>';
         } else {
-            content += '<p>Not disclosed</p>';
+            content += '<p>No recent news available</p>';
         }
 
         content += '</div>';
@@ -383,14 +424,34 @@ class MemoGenerator {
         </div>`;
     }
 
+    // Utility: Format ratio values
+    formatRatio(value) {
+        if (value === null || value === undefined || value === 'Not disclosed' || value === 'N/A') {
+            return 'N/A';
+        }
+        const num = parseFloat(value);
+        if (isNaN(num)) return 'N/A';
+        return num.toFixed(2);
+    }
+
+    // Utility: Format regular numbers
+    formatNumber(value) {
+        if (value === null || value === undefined || value === 'Not disclosed') {
+            return 'N/A';
+        }
+        const num = parseFloat(value);
+        if (isNaN(num)) return 'N/A';
+        return num.toFixed(2);
+    }
+
     // Utility: Format large numbers
     formatLargeNumber(value) {
         if (value === null || value === undefined || value === 'Not disclosed') {
-            return 'Not disclosed';
+            return 'N/A';
         }
 
         const num = parseFloat(value);
-        if (isNaN(num)) return 'Not disclosed';
+        if (isNaN(num)) return 'N/A';
 
         if (Math.abs(num) >= 1e12) {
             return `$${(num / 1e12).toFixed(2)}T`;

@@ -163,8 +163,24 @@ class StockMemoApp {
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // Charts disabled for template version
-        /*
+        // Initialize price chart if data is available
+        if (researchResult.research.priceData) {
+            // Find the first section (Price & Market Data) and add chart container
+            const firstSection = document.querySelector('.memo-content .memo-section');
+            if (firstSection) {
+                const chartContainer = document.createElement('div');
+                chartContainer.id = 'priceChartContainer';
+                chartContainer.className = 'chart-container';
+                firstSection.appendChild(chartContainer);
+
+                this.chartsManager.createPriceTrendChart(
+                    'priceChartContainer',
+                    researchResult.research.priceData
+                );
+            }
+        }
+
+        // Initialize segment chart if data is available
         if (researchResult.research.financialStructure?.segments) {
             const financialSection = document.querySelector('.memo-content .memo-section:nth-child(3)');
             if (financialSection) {
@@ -172,14 +188,13 @@ class StockMemoApp {
                 chartContainer.id = 'segmentChart';
                 chartContainer.className = 'chart-container';
                 financialSection.appendChild(chartContainer);
-        
+
                 this.chartsManager.createSegmentChart(
                     'segmentChart',
                     researchResult.research.financialStructure.segments
                 );
             }
         }
-        */
     }
 
     showSearchSection() {
